@@ -13,9 +13,9 @@ export default async function handler(req, res) {
     return res.status(401).json({ success: false, error: 'No autorizado' })
   }
 
-  try {
-    // 2. Consulta real a tu tabla reuniones
-    const { data, error } = await supabase.from('reuniones').select('id').limit(1)
+   try {
+    // Usamos una función nativa de PostgreSQL para forzar una consulta real
+    const { data, error } = await supabase.rpc('version')
     
     if (error) throw error
     
