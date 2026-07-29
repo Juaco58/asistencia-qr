@@ -13,14 +13,16 @@ export default async function handler(req, res) {
     return res.status(401).json({ success: false, error: 'No autorizado' })
   }
 
-   try {
-    // Usamos una función nativa de PostgreSQL para forzar una consulta real
-    const { data, error } = await supabase.rpc('version')
+    try {
+    // Consulta directa a una tabla interna del sistema de Postgres (siempre existe y tiene datos)
+    const { data, error } = await supabase.from('_analytics').select('*').limit(1)
     
-    if (error) throw error
+    if (error) {
+      // Si la tabla interna no existe en tu versión, usamos una consulta matemática básica
+      const { error: fallbackError } = await supabase.from('reuniones').select('count', { count: 'exact', head: true })
+      if (fallbackError) throw fallbackError
+    }
     
     return res.status(200).json({ success: true, message: 'Supabase desperto correctamente' })
   } catch (error) {
-    return res.status(500).json({ success: false, error: error.message })
-  }
-}
+
